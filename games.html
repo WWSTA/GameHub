@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>所有游戏 - GameHub</title>
+    <meta name="description" content="GameHub所有游戏列表">
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/script.js" as="script">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 更多游戏页面特有样式 */
+        .games-list-page {
+            padding-top: 70px;
+            min-height: 100vh;
+            background-color: var(--background-color);
+        }
+        
+        .games-list-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        /* 搜索区域 */
+        .search-section {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: var(--background-color);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 150px;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* 游戏目录 */
+        .games-directory {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .directory-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .directory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .directory-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        
+        .directory-item:hover {
+            background-color: rgba(74, 108, 247, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .directory-item i {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+        
+        .directory-item span {
+            font-weight: 500;
+        }
+        
+        /* 游戏列表 */
+        .games-grid-section {
+            margin-bottom: 40px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .games-count {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .all-games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .game-card-item {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .game-card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-card-image {
+            height: 180px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card-image i {
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+        
+        .game-card-info {
+            padding: 20px;
+        }
+        
+        .game-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .game-card-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .game-card-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .game-tag {
+            background-color: rgba(74, 108, 247, 0.1);
+            color: var(--primary-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+        
+        .page-btn {
+            padding: 10px 15px;
+            background-color: var(--card-background);
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .page-btn:hover {
+            background-color: rgba(74, 108, 247, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .page-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .filter-container {
+                justify-content: stretch;
+            }
+            
+            .filter-select {
+                flex: 1;
+            }
+            
+            .directory-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .all-games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .games-list-container {
+                padding: 20px 15px;
+            }
+            
+            .search-section,
+            .games-directory {
+                padding: 20px;
+            }
+            
+            .all-games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1><i class="fas fa-gamepad"></i> GameHub</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="index.html#games" class="active">游戏</a>
+                <a href="index.html#categories">分类</a>
+                <a href="index.html#about">关于</a>
+            </nav>
+            <div class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 更多游戏页面 -->
+    <section class="games-list-page">
+        <div class="games-list-container">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1>所有游戏</h1>
+                <p>探索我们丰富的游戏库，找到你喜欢的游戏</p>
+            </div>
+
+            <!-- 搜索区域 -->
+            <div class="search-section">
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="搜索游戏...">
+                    </div>
+                    <div class="filter-container">
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="">所有分类</option>
+                            <option value="puzzle">益智游戏</option>
+                            <option value="action">动作游戏</option>
+                            <option value="strategy">策略游戏</option>
+                            <option value="casual">休闲游戏</option>
+                        </select>
+                        <select class="filter-select" id="sortFilter">
+                            <option value="popular">最受欢迎</option>
+                            <option value="newest">最新发布</option>
+                            <option value="rating">评分最高</option>
+                            <option value="name">名称排序</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 游戏目录 -->
+            <div class="games-directory">
+                <h2 class="directory-title">
+                    <i class="fas fa-folder-open"></i>
+                    游戏目录
+                </h2>
+                <div class="directory-grid">
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-brain"></i>
+                        <span>益智游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-running"></i>
+                        <span>动作游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-chess"></i>
+                        <span>策略游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span>解谜游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-car"></i>
+                        <span>赛车游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-futbol"></i>
+                        <span>体育游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-ghost"></i>
+                        <span>冒险游戏</span>
+                    </a>
+                    <a href="#" class="directory-item">
+                        <i class="fas fa-music"></i>
+                        <span>音乐游戏</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 游戏列表 -->
+            <div class="games-grid-section">
+                <div class="section-header">
+                    <h2 class="section-title">游戏列表</h2>
+                    <span class="games-count">共 24 款游戏</span>
+                </div>
+                <div class="all-games-grid" id="gamesGrid">
+                    <!-- 游戏卡片 1 -->
+                    <a href="game.html?game=new-memory-match" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">新记忆配对游戏</h3>
+                            <p class="game-card-desc">全新升级！多种难度、主题切换、提示功能，锻炼记忆力的最佳选择！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">益智</span>
+                                <span class="game-tag">休闲</span>
+                                <span class="game-tag">记忆</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 2 -->
+                    <a href="game.html?game=snake-game" class="game-card-item">
+                        <div class="game-card-image">
+                            <i class="fas fa-dragon"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">新贪吃蛇游戏</h3>
+                            <p class="game-card-desc">全新升级的贪吃蛇游戏！道具系统、多种食物、最高分记录，体验更加刺激有趣的游戏过程。</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">休闲</span>
+                                <span class="game-tag">街机</span>
+                                <span class="game-tag">动作</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 3 -->
+                    <a href="game.html?game=breakout-game" class="game-card-item">
+                        <div class="game-card-image">
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">新打砖块游戏</h3>
+                            <p class="game-card-desc">全新升级的打砖块游戏！道具系统、连击机制、多关卡挑战，体验更加刺激有趣的游戏过程。</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">休闲</span>
+                                <span class="game-tag">街机</span>
+                                <span class="game-tag">动作</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 4 -->
+                    <a href="game.html?game=2048-game" class="game-card-item">
+                        <div class="game-card-image">
+                            <i class="fas fa-th"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">2048数字游戏</h3>
+                            <p class="game-card-desc">风靡全球的数字益智游戏！合并相同数字的方块，合成2048，挑战你的数学思维和策略能力。</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">益智</span>
+                                <span class="game-tag">数字</span>
+                                <span class="game-tag">策略</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 5 -->
+                    <a href="game.html?game=tetris-game" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">俄罗斯方块游戏</h3>
+                            <p class="game-card-desc">经典的俄罗斯方块游戏！控制不断下落的方块，通过旋转、移动和摆放，将方块填满整行来消除得分！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">经典</span>
+                                <span class="game-tag">街机</span>
+                                <span class="game-tag">益智</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 6 -->
+                    <a href="game.html?game=space-shooter" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">太空射击游戏</h3>
+                            <p class="game-card-desc">刺激的太空射击游戏！驾驶宇宙飞船，在浩瀚的宇宙中与外星敌人展开激烈战斗，收集道具强化飞船！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">射击</span>
+                                <span class="game-tag">街机</span>
+                                <span class="game-tag">太空</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 7 -->
+                    <a href="game.html?game=link-game" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">连连看游戏</h3>
+                            <p class="game-card-desc">经典的益智连线游戏，找到相同图案连接消除，考验你的观察力！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">益智</span>
+                                <span class="game-tag">休闲</span>
+                                <span class="game-tag">连线</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 8 -->
+                    <a href="game.html?game=minesweeper" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-bomb"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">扫雷游戏</h3>
+                            <p class="game-card-desc">经典的益智策略游戏，根据数字判断地雷位置，考验你的逻辑推理！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">益智</span>
+                                <span class="game-tag">策略</span>
+                                <span class="game-tag">经典</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 9 -->
+                    <a href="game.html?game=sudoku" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                            <i class="fas fa-th"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">数独游戏</h3>
+                            <p class="game-card-desc">经典的数字益智游戏，填入1-9的数字，使每行每列每个小九宫格都不重复！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">益智</span>
+                                <span class="game-tag">数独</span>
+                                <span class="game-tag">逻辑</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 10 -->
+                    <a href="game.html?game=gomoku" class="game-card-item">
+                        <div class="game-card-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-chess"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">五子棋游戏</h3>
+                            <p class="game-card-desc">经典策略棋类游戏，在15x15棋盘上黑白双方轮流落子，先连成五子者获胜！</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">策略</span>
+                                <span class="game-tag">棋类</span>
+                                <span class="game-tag">对战</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 11 -->
+                    <a href="game.html" class="game-card-item">
+                        <div class="game-card-image">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">游戏名称 11</h3>
+                            <p class="game-card-desc">射击游戏，精准打击目标。</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">射击</span>
+                                <span class="game-tag">动作</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 游戏卡片 12 -->
+                    <a href="game.html" class="game-card-item">
+                        <div class="game-card-image">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="game-card-info">
+                            <h3 class="game-card-title">游戏名称 12</h3>
+                            <p class="game-card-desc">模拟经营游戏，打造你的商业帝国。</p>
+                            <div class="game-card-tags">
+                                <span class="game-tag">模拟</span>
+                                <span class="game-tag">经营</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination">
+                    <button class="page-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3><i class="fas fa-gamepad"></i> GameHub</h3>
+                    <p>多款小游戏集合，享受休闲时光</p>
+                </div>
+                <div class="footer-links">
+                    <h4>快速链接</h4>
+                    <a href="index.html">首页</a>
+                    <a href="index.html#games">游戏</a>
+                    <a href="index.html#categories">分类</a>
+                    <a href="index.html#about">关于</a>
+                </div>
+                <div class="footer-social">
+                    <h4>关注我们</h4>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 GameHub. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script>
+        // 更多游戏页面脚本
+        document.addEventListener('DOMContentLoaded', function() {
+            // 搜索功能
+            const searchInput = document.getElementById('searchInput');
+            const gamesGrid = document.getElementById('gamesGrid');
+            const gameCards = gamesGrid.querySelectorAll('.game-card-item');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                gameCards.forEach(card => {
+                    const title = card.querySelector('.game-card-title').textContent.toLowerCase();
+                    const desc = card.querySelector('.game-card-desc').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 分类筛选功能
+            const categoryFilter = document.getElementById('categoryFilter');
+            
+            categoryFilter.addEventListener('change', function() {
+                const selectedCategory = this.value;
+                
+                gameCards.forEach(card => {
+                    const tags = card.querySelectorAll('.game-tag');
+                    let hasCategory = false;
+                    
+                    tags.forEach(tag => {
+                        if (selectedCategory === '' || tag.textContent.toLowerCase().includes(selectedCategory)) {
+                            hasCategory = true;
+                        }
+                    });
+                    
+                    if (selectedCategory === '' || hasCategory) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新贪吃蛇游戏 - GameHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        canvas {
+            border: 3px solid #333;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            display: block;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .mobile-controls {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .mobile-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .dir-btn {
+            width: 70px;
+            height: 70px;
+            padding: 0;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+
+            .mobile-controls {
+                display: flex;
+            }
+
+            .game-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .power-up-indicator {
+            position: absolute;
+            padding: 5px 10px;
+            background: #f1c40f;
+            color: #333;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            animation: powerUpFade 2s ease forwards;
+        }
+
+        @keyframes powerUpFade {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🐍 新贪吃蛇游戏</h1>
+        <div class="game-stats">
+            <div class="stat-item">
+                <span class="stat-label">得分</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">等级</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">最高分</span>
+                <span class="stat-value" id="highScore">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">蛇长</span>
+                <span class="stat-value" id="snakeLength">3</span>
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="500" height="500"></canvas>
+        <div class="controls">
+            <button id="startBtn">🚀 开始游戏</button>
+            <button id="pauseBtn">⏸️ 暂停</button>
+            <button id="resetBtn">🔄 重置</button>
+        </div>
+        <div class="mobile-controls">
+            <div class="mobile-row">
+                <button class="dir-btn" id="upBtn">⬆️</button>
+            </div>
+            <div class="mobile-row">
+                <button class="dir-btn" id="leftBtn">⬅️</button>
+                <button class="dir-btn" id="downBtn">⬇️</button>
+                <button class="dir-btn" id="rightBtn">➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameOverModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle">游戏结束！</h2>
+            <p id="modalMessage">最终得分: 0</p>
+            <button onclick="resetGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const highScoreElement = document.getElementById('highScore');
+        const snakeLengthElement = document.getElementById('snakeLength');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const upBtn = document.getElementById('upBtn');
+        const downBtn = document.getElementById('downBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+
+        const gridSize = 25;
+        const tileSize = canvas.width / gridSize;
+
+        const FOOD_TYPES = {
+            NORMAL: { color: '#e74c3c', points: 10, emoji: '🍎' },
+            GOLDEN: { color: '#f1c40f', points: 30, emoji: '⭐' },
+            SPEED: { color: '#3498db', points: 15, emoji: '⚡' },
+            SLOW: { color: '#9b59b6', points: 15, emoji: '🐌' },
+            SHIELD: { color: '#2ecc71', points: 20, emoji: '🛡️' },
+            GHOST: { color: '#ecf0f1', points: 25, emoji: '👻' }
+        };
+
+        let snake = [];
+        let direction = 'right';
+        let nextDirection = 'right';
+        let score = 0;
+        let level = 1;
+        let highScore = parseInt(localStorage.getItem('snakeHighScore')) || 0;
+        let gameSpeed = 150;
+        let gameInterval;
+        let gameStarted = false;
+        let isPaused = false;
+        let gameOver = false;
+        let foods = [];
+        let particles = [];
+        let powerUps = {
+            speed: false,
+            slow: false,
+            shield: false,
+            ghost: false
+        };
+        let powerUpTimers = {};
+
+        highScoreElement.textContent = highScore;
+
+        function initGame() {
+            snake = [
+                { x: 12, y: 12 },
+                { x: 11, y: 12 },
+                { x: 10, y: 12 }
+            ];
+            direction = 'right';
+            nextDirection = 'right';
+            score = 0;
+            level = 1;
+            gameSpeed = 150;
+            gameStarted = false;
+            isPaused = false;
+            gameOver = false;
+            foods = [];
+            particles = [];
+            powerUps = { speed: false, slow: false, shield: false, ghost: false };
+            powerUpTimers = {};
+
+            scoreElement.textContent = score;
+            levelElement.textContent = level;
+            snakeLengthElement.textContent = snake.length;
+
+            clearInterval(gameInterval);
+            generateFoods();
+            drawGame();
+            gameOverModal.classList.add('hidden');
+        }
+
+        function generateFoods() {
+            foods = [];
+            const foodCount = Math.min(3 + Math.floor(level / 3), 6);
+            
+            for (let i = 0; i < foodCount; i++) {
+                generateSingleFood();
+            }
+        }
+
+        function generateSingleFood() {
+            let food;
+            let attempts = 0;
+            
+            do {
+                const foodTypes = Object.keys(FOOD_TYPES);
+                let typeIndex = 0;
+                const rand = Math.random();
+                
+                if (rand < 0.5) typeIndex = 0;
+                else if (rand < 0.65) typeIndex = 1;
+                else if (rand < 0.75) typeIndex = 2;
+                else if (rand < 0.85) typeIndex = 3;
+                else if (rand < 0.93) typeIndex = 4;
+                else typeIndex = 5;
+
+                food = {
+                    x: Math.floor(Math.random() * gridSize),
+                    y: Math.floor(Math.random() * gridSize),
+                    type: foodTypes[typeIndex],
+                    pulse: 0
+                };
+                attempts++;
+            } while (isOccupied(food.x, food.y) && attempts < 100);
+
+            if (attempts < 100) {
+                foods.push(food);
+            }
+        }
+
+        function isOccupied(x, y) {
+            for (let segment of snake) {
+                if (segment.x === x && segment.y === y) return true;
+            }
+            for (let f of foods) {
+                if (f.x === x && f.y === y) return true;
+            }
+            return false;
+        }
+
+        function createParticles(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x * tileSize + tileSize / 2,
+                    y: y * tileSize + tileSize / 2,
+                    dx: (Math.random() - 0.5) * 8,
+                    dy: (Math.random() - 0.5) * 8,
+                    radius: Math.random() * 4 + 2,
+                    color: color,
+                    life: 1
+                });
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life -= 0.02;
+                p.radius *= 0.98;
+                return p.life > 0;
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fill();
+                ctx.closePath();
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function drawGame() {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * tileSize, 0);
+                ctx.lineTo(i * tileSize, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * tileSize);
+                ctx.lineTo(canvas.width, i * tileSize);
+                ctx.stroke();
+            }
+
+            drawFoods();
+            drawSnake();
+            drawParticles();
+            drawPowerUpIndicators();
+        }
+
+        function drawFoods() {
+            foods.forEach(food => {
+                food.pulse += 0.1;
+                const scale = 1 + Math.sin(food.pulse) * 0.1;
+                const foodInfo = FOOD_TYPES[food.type];
+                const centerX = food.x * tileSize + tileSize / 2;
+                const centerY = food.y * tileSize + tileSize / 2;
+                const size = (tileSize - 4) * scale;
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, size / 2 + 3, 0, Math.PI * 2);
+                ctx.fillStyle = foodInfo.color + '40';
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
+                ctx.fillStyle = foodInfo.color;
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.font = `${size * 0.7}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(foodInfo.emoji, centerX, centerY);
+            });
+        }
+
+        function drawSnake() {
+            snake.forEach((segment, index) => {
+                const isHead = index === 0;
+                const gradient = ctx.createRadialGradient(
+                    segment.x * tileSize + tileSize / 2,
+                    segment.y * tileSize + tileSize / 2,
+                    0,
+                    segment.x * tileSize + tileSize / 2,
+                    segment.y * tileSize + tileSize / 2,
+                    tileSize / 2
+                );
+
+                if (isHead) {
+                    gradient.addColorStop(0, '#4ade80');
+                    gradient.addColorStop(1, '#22c55e');
+                } else {
+                    const alpha = 1 - (index / snake.length) * 0.5;
+                    gradient.addColorStop(0, `rgba(74, 222, 128, ${alpha})`);
+                    gradient.addColorStop(1, `rgba(34, 197, 94, ${alpha})`);
+                }
+
+                if (powerUps.shield && isHead) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        segment.x * tileSize + tileSize / 2,
+                        segment.y * tileSize + tileSize / 2,
+                        tileSize / 2 + 5,
+                        0, Math.PI * 2
+                    );
+                    ctx.strokeStyle = '#2ecc71';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+
+                if (powerUps.ghost) {
+                    ctx.globalAlpha = 0.6;
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(
+                    segment.x * tileSize + 2,
+                    segment.y * tileSize + 2,
+                    tileSize - 4,
+                    tileSize - 4,
+                    5
+                );
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.globalAlpha = 1;
+
+                if (isHead) {
+                    drawSnakeEyes(segment);
+                }
+            });
+        }
+
+        function drawSnakeEyes(head) {
+            const centerX = head.x * tileSize + tileSize / 2;
+            const centerY = head.y * tileSize + tileSize / 2;
+            const eyeOffset = 4;
+            let eye1X, eye1Y, eye2X, eye2Y;
+
+            switch (direction) {
+                case 'up':
+                    eye1X = centerX - eyeOffset; eye1Y = centerY - 3;
+                    eye2X = centerX + eyeOffset; eye2Y = centerY - 3;
+                    break;
+                case 'down':
+                    eye1X = centerX - eyeOffset; eye1Y = centerY + 3;
+                    eye2X = centerX + eyeOffset; eye2Y = centerY + 3;
+                    break;
+                case 'left':
+                    eye1X = centerX - 3; eye1Y = centerY - eyeOffset;
+                    eye2X = centerX - 3; eye2Y = centerY + eyeOffset;
+                    break;
+                case 'right':
+                    eye1X = centerX + 3; eye1Y = centerY - eyeOffset;
+                    eye2X = centerX + 3; eye2Y = centerY + eyeOffset;
+                    break;
+            }
+
+            ctx.beginPath();
+            ctx.arc(eye1X, eye1Y, 3, 0, Math.PI * 2);
+            ctx.arc(eye2X, eye2Y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.arc(eye1X, eye1Y, 1.5, 0, Math.PI * 2);
+            ctx.arc(eye2X, eye2Y, 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPowerUpIndicators() {
+            let y = 10;
+            const indicators = [];
+            
+            if (powerUps.speed) indicators.push({ icon: '⚡', color: '#3498db' });
+            if (powerUps.slow) indicators.push({ icon: '🐌', color: '#9b59b6' });
+            if (powerUps.shield) indicators.push({ icon: '🛡️', color: '#2ecc71' });
+            if (powerUps.ghost) indicators.push({ icon: '👻', color: '#ecf0f1' });
+
+            indicators.forEach((ind, i) => {
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = ind.color;
+                ctx.fillText(ind.icon, 10, y + i * 25);
+            });
+        }
+
+        function moveSnake() {
+            direction = nextDirection;
+
+            const head = { ...snake[0] };
+
+            switch (direction) {
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+                case 'left': head.x--; break;
+                case 'right': head.x++; break;
+            }
+
+            if (!powerUps.ghost && checkCollision(head)) {
+                if (powerUps.shield) {
+                    powerUps.shield = false;
+                    direction = getOppositeDirection(direction);
+                    nextDirection = direction;
+                    return;
+                }
+                endGame();
+                return;
+            }
+
+            if (powerUps.ghost) {
+                if (head.x < 0) head.x = gridSize - 1;
+                if (head.x >= gridSize) head.x = 0;
+                if (head.y < 0) head.y = gridSize - 1;
+                if (head.y >= gridSize) head.y = 0;
+            }
+
+            snake.unshift(head);
+
+            let ate = false;
+            for (let i = foods.length - 1; i >= 0; i--) {
+                const food = foods[i];
+                if (head.x === food.x && head.y === food.y) {
+                    const foodInfo = FOOD_TYPES[food.type];
+                    score += foodInfo.points;
+                    scoreElement.textContent = score;
+
+                    createParticles(food.x, food.y, foodInfo.color);
+                    applyPowerUp(food.type);
+                    foods.splice(i, 1);
+                    generateSingleFood();
+                    ate = true;
+
+                    if (score > highScore) {
+                        highScore = score;
+                        highScoreElement.textContent = highScore;
+                        localStorage.setItem('snakeHighScore', highScore);
+                    }
+
+                    checkLevelUp();
+                    break;
+                }
+            }
+
+            if (!ate) {
+                snake.pop();
+            }
+
+            snakeLengthElement.textContent = snake.length;
+        }
+
+        function getOppositeDirection(dir) {
+            const opposites = { up: 'down', down: 'up', left: 'right', right: 'left' };
+            return opposites[dir];
+        }
+
+        function applyPowerUp(type) {
+            switch (type) {
+                case 'SPEED':
+                    activatePowerUp('speed', 5000);
+                    break;
+                case 'SLOW':
+                    activatePowerUp('slow', 5000);
+                    break;
+                case 'SHIELD':
+                    activatePowerUp('shield', 8000);
+                    break;
+                case 'GHOST':
+                    activatePowerUp('ghost', 6000);
+                    break;
+            }
+            updateGameSpeed();
+        }
+
+        function activatePowerUp(type, duration) {
+            powerUps[type] = true;
+            if (powerUpTimers[type]) {
+                clearTimeout(powerUpTimers[type]);
+            }
+            powerUpTimers[type] = setTimeout(() => {
+                powerUps[type] = false;
+                updateGameSpeed();
+            }, duration);
+        }
+
+        function updateGameSpeed() {
+            clearInterval(gameInterval);
+            let speed = gameSpeed;
+            
+            if (powerUps.speed) speed = Math.max(50, speed * 0.6);
+            if (powerUps.slow) speed = speed * 1.5;
+            
+            if (gameStarted && !gameOver) {
+                gameInterval = setInterval(gameLoop, speed);
+            }
+        }
+
+        function checkLevelUp() {
+            const newLevel = Math.floor(score / 100) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                levelElement.textContent = level;
+                gameSpeed = Math.max(60, 150 - (level - 1) * 10);
+                updateGameSpeed();
+            }
+        }
+
+        function checkCollision(head) {
+            if (!powerUps.ghost) {
+                if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize) {
+                    return true;
+                }
+            }
+
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function endGame() {
+            gameOver = true;
+            gameStarted = false;
+            clearInterval(gameInterval);
+            
+            modalTitle.textContent = '游戏结束！';
+            modalMessage.textContent = `最终得分: ${score}\n到达等级: ${level}\n蛇身长度: ${snake.length}`;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        function gameLoop() {
+            if (!isPaused && !gameOver) {
+                moveSnake();
+                updateParticles();
+            }
+            drawGame();
+        }
+
+        function changeDirection(newDirection) {
+            if (
+                (newDirection === 'up' && direction !== 'down') ||
+                (newDirection === 'down' && direction !== 'up') ||
+                (newDirection === 'left' && direction !== 'right') ||
+                (newDirection === 'right' && direction !== 'left')
+            ) {
+                nextDirection = newDirection;
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            switch (e.key) {
+                case 'ArrowUp': case 'w': case 'W':
+                    changeDirection('up');
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown': case 's': case 'S':
+                    changeDirection('down');
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft': case 'a': case 'A':
+                    changeDirection('left');
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight': case 'd': case 'D':
+                    changeDirection('right');
+                    e.preventDefault();
+                    break;
+                case ' ':
+                    if (!gameStarted && !gameOver) {
+                        startGame();
+                    } else {
+                        togglePause();
+                    }
+                    e.preventDefault();
+                    break;
+                case 'Escape':
+                    togglePause();
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        function startGame() {
+            if (!gameStarted && !gameOver) {
+                gameStarted = true;
+                isPaused = false;
+                gameInterval = setInterval(gameLoop, gameSpeed);
+            }
+        }
+
+        function togglePause() {
+            if (gameStarted && !gameOver) {
+                isPaused = !isPaused;
+                pauseBtn.textContent = isPaused ? '▶️ 继续' : '⏸️ 暂停';
+            }
+        }
+
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', togglePause);
+        resetBtn.addEventListener('click', resetGame);
+
+        upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('up'); });
+        downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('down'); });
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('left'); });
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('right'); });
+
+        upBtn.addEventListener('mousedown', () => changeDirection('up'));
+        downBtn.addEventListener('mousedown', () => changeDirection('down'));
+        leftBtn.addEventListener('mousedown', () => changeDirection('left'));
+        rightBtn.addEventListener('mousedown', () => changeDirection('right'));
+
+        canvas.addEventListener('click', function() {
+            if (!gameStarted && !gameOver) {
+                startGame();
+            }
+        });
+
+        initGame();
+    </script>
+</body>
+</html>

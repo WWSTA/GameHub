@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开发中 - GameHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 60px 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        .message {
+            color: #666;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            width: 0%;
+            animation: progress 3s ease-out forwards;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 60%; }
+        }
+
+        .progress-text {
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .features {
+            text-align: left;
+            margin: 40px 0;
+        }
+
+        .features h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
+            background: #e9ecef;
+        }
+
+        .feature-icon {
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        .feature-text {
+            color: #555;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .icon {
+                font-size: 4rem;
+            }
+
+            .message {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🚧</div>
+        <h1>此页面正在开发中</h1>
+        <p class="message">
+            感谢您访问 GameHub！我们正在努力开发更多精彩的游戏，敬请期待！<br>
+            我们的团队正在全力以赴，为您带来更好的游戏体验。
+        </p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill">
+                <span class="progress-text">60%</span>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>即将推出的功能：</h3>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <span class="feature-icon">🎮</span>
+                    <span class="feature-text">更多精彩小游戏</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">👥</span>
+                    <span class="feature-text">用户登录系统</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🏆</span>
+                    <span class="feature-text">游戏排行榜</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">💾</span>
+                    <span class="feature-text">游戏存档功能</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🎨</span>
+                    <span class="feature-text">更多主题选择</span>
+                </li>
+            </ul>
+        </div>
+
+        <button onclick="goHome()" class="btn">返回首页</button>
+    </div>
+    <script>
+        function goHome() {
+            // 尝试在父窗口打开，否则在当前窗口打开
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.location.href = '../index.html';
+                } else {
+                    window.location.href = '../index.html';
+                }
+            } catch (e) {
+                // 如果无法访问父窗口，在当前窗口打开
+                window.location.href = '../index.html';
+            }
+        }
+    </script>
+</body>
+</html>

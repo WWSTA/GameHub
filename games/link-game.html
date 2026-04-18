@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看游戏 - GameHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-radius: 10px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: inline-block;
+            margin: 0 auto 25px;
+            position: relative;
+        }
+
+        .grid {
+            display: grid;
+            gap: 5px;
+            background: #e0e0e0;
+            padding: 5px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .cell {
+            width: 55px;
+            height: 55px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            user-select: none;
+        }
+
+        .cell:hover:not(.empty):not(.selected) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .cell.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .cell.matched {
+            animation: matchAnim 0.5s ease forwards;
+        }
+
+        @keyframes matchAnim {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .cell.empty {
+            visibility: hidden;
+            cursor: default;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .line-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            pointer-events: none;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .level-selector {
+            margin-bottom: 20px;
+        }
+
+        .level-btn {
+            margin: 5px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .level-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .game-container {
+                padding: 20px;
+            }
+
+            .cell {
+                width: 40px;
+                height: 40px;
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .cell {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .cell {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+
+            .grid {
+                gap: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🔗 连连看游戏</h1>
+        
+        <div class="level-selector">
+            <button class="level-btn active" data-level="easy">简单 (6x6)</button>
+            <button class="level-btn" data-level="medium">中等 (8x8)</button>
+            <button class="level-btn" data-level="hard">困难 (10x10)</button>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-item">
+                <span class="stat-label">得分</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">剩余对数</span>
+                <span class="stat-value" id="pairs">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">提示次数</span>
+                <span class="stat-value" id="hints">3</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">最高分</span>
+                <span class="stat-value" id="highScore">--</span>
+            </div>
+        </div>
+        
+        <div class="game-board">
+            <div class="grid" id="grid"></div>
+            <canvas class="line-canvas" id="lineCanvas"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="restartBtn">🔄 重新开始</button>
+            <button id="hintBtn">💡 提示</button>
+            <button id="shuffleBtn">🔀 重排</button>
+        </div>
+    </div>
+
+    <div id="winModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="winTitle">🎉 恭喜通关！</h2>
+            <p id="winMessage">你完成了游戏！</p>
+            <button onclick="restartGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <div id="noPathModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>💡 提示</h2>
+            <p>没有可连接的对了！请使用重排功能。</p>
+            <button onclick="closeNoPathModal()">好的</button>
+        </div>
+    </div>
+
+    <script>
+        const emojis = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝', '🥭', '🍅', '🥑', '🍆', '🥔', '🥕', '🌽', '🥜', '🍯', '🍩', '🍪', '🎂', '🍰', '🧁', '🍭'];
+        
+        const levels = {
+            easy: { cols: 6, rows: 6, pairs: 18 },
+            medium: { cols: 8, rows: 8, pairs: 32 },
+            hard: { cols: 10, rows: 10, pairs: 50 }
+        };
+
+        let grid = [];
+        let selectedCell = null;
+        let score = 0;
+        let pairsLeft = 0;
+        let hintsLeft = 3;
+        let currentLevel = 'easy';
+        let highScoreKey = '';
+        let isAnimating = false;
+
+        const gridElement = document.getElementById('grid');
+        const lineCanvas = document.getElementById('lineCanvas');
+        const ctx = lineCanvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const pairsElement = document.getElementById('pairs');
+        const hintsElement = document.getElementById('hints');
+        const highScoreElement = document.getElementById('highScore');
+        const winModal = document.getElementById('winModal');
+        const winTitle = document.getElementById('winTitle');
+        const winMessage = document.getElementById('winMessage');
+        const noPathModal = document.getElementById('noPathModal');
+        const restartBtn = document.getElementById('restartBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+
+        function initGame() {
+            selectedCell = null;
+            score = 0;
+            hintsLeft = 3;
+            isAnimating = false;
+            highScoreKey = `link-game-${currentLevel}`;
+            
+            updateStats();
+            loadHighScore();
+            createGrid();
+        }
+
+        function createGrid() {
+            const config = levels[currentLevel];
+            const totalCells = config.cols * config.rows;
+            
+            grid = [];
+            pairsLeft = config.pairs;
+            
+            const selectedEmojis = emojis.slice(0, config.pairs);
+            let cells = [];
+            
+            for (let i = 0; i < config.pairs; i++) {
+                cells.push(selectedEmojis[i]);
+                cells.push(selectedEmojis[i]);
+            }
+            
+            while (cells.length < totalCells) {
+                cells.push(null);
+            }
+            
+            shuffleArray(cells);
+            
+            let index = 0;
+            for (let y = 0; y < config.rows + 2; y++) {
+                grid[y] = [];
+                for (let x = 0; x < config.cols + 2; x++) {
+                    if (x === 0 || y === 0 || x === config.cols + 1 || y === config.rows + 1) {
+                        grid[y][x] = null;
+                    } else {
+                        grid[y][x] = cells[index++];
+                    }
+                }
+            }
+            
+            renderGrid();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderGrid() {
+            const config = levels[currentLevel];
+            gridElement.innerHTML = '';
+            gridElement.style.gridTemplateColumns = `repeat(${config.cols + 2}, 1fr)`;
+            
+            // 动态计算格子大小
+            const containerWidth = gridElement.parentElement.clientWidth;
+            const maxCellSize = 55;
+            const minCellSize = 25;
+            const gap = 5;
+            const availableWidth = containerWidth - 20;
+            const calculatedCellSize = Math.floor(availableWidth / (config.cols + 2)) - gap;
+            const cellSize = Math.max(minCellSize, Math.min(maxCellSize, calculatedCellSize));
+            
+            const totalWidth = (config.cols + 2) * (cellSize + gap);
+            const totalHeight = (config.rows + 2) * (cellSize + gap);
+            
+            lineCanvas.width = totalWidth;
+            lineCanvas.height = totalHeight;
+            
+            // 更新所有格子的样式
+            const style = document.createElement('style');
+            style.id = 'dynamic-cell-style';
+            const oldStyle = document.getElementById('dynamic-cell-style');
+            if (oldStyle) oldStyle.remove();
+            style.textContent = `
+                .cell {
+                    width: ${cellSize}px !important;
+                    height: ${cellSize}px !important;
+                    font-size: ${Math.max(0.8, cellSize / 35)}rem !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            for (let y = 0; y < config.rows + 2; y++) {
+                for (let x = 0; x < config.cols + 2; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    if (grid[y][x]) {
+                        cell.textContent = grid[y][x];
+                        cell.addEventListener('click', () => handleCellClick(x, y));
+                    } else {
+                        cell.classList.add('empty');
+                    }
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(x, y) {
+            if (isAnimating) return;
+            if (!grid[y][x]) return;
+            
+            const cellElement = getCellElement(x, y);
+            
+            if (selectedCell) {
+                if (selectedCell.x === x && selectedCell.y === y) {
+                    cellElement.classList.remove('selected');
+                    selectedCell = null;
+                    return;
+                }
+                
+                if (grid[selectedCell.y][selectedCell.x] === grid[y][x]) {
+                    const path = findPath(selectedCell.x, selectedCell.y, x, y);
+                    if (path) {
+                        drawPath(path);
+                        const cell1 = getCellElement(selectedCell.x, selectedCell.y);
+                        const cell2 = cellElement;
+                        
+                        isAnimating = true;
+                        cell1.classList.add('matched');
+                        cell2.classList.add('matched');
+                        
+                        setTimeout(() => {
+                            grid[selectedCell.y][selectedCell.x] = null;
+                            grid[y][x] = null;
+                            cell1.classList.add('empty');
+                            cell2.classList.add('empty');
+                            cell1.classList.remove('selected', 'matched');
+                            cell2.classList.remove('selected', 'matched');
+                            
+                            pairsLeft--;
+                            score += 10;
+                            updateStats();
+                            clearPath();
+                            
+                            selectedCell = null;
+                            isAnimating = false;
+                            
+                            if (pairsLeft === 0) {
+                                winGame();
+                            } else if (!hasValidPairs()) {
+                                showNoPathModal();
+                            }
+                        }, 500);
+                    } else {
+                        getCellElement(selectedCell.x, selectedCell.y).classList.remove('selected');
+                        cellElement.classList.add('selected');
+                        selectedCell = { x, y };
+                    }
+                } else {
+                    getCellElement(selectedCell.x, selectedCell.y).classList.remove('selected');
+                    cellElement.classList.add('selected');
+                    selectedCell = { x, y };
+                }
+            } else {
+                cellElement.classList.add('selected');
+                selectedCell = { x, y };
+            }
+        }
+
+        function getCellElement(x, y) {
+            return gridElement.children[y * (levels[currentLevel].cols + 2) + x];
+        }
+
+        function findPath(x1, y1, x2, y2) {
+            const config = levels[currentLevel];
+            const visited = Array(config.rows + 2).fill(null).map(() => Array(config.cols + 2).fill(false));
+            const queue = [{ x: x1, y: y1, path: [{ x: x1, y: y1 }] }];
+            visited[y1][x1] = true;
+            
+            const directions = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                
+                for (const dir of directions) {
+                    let nx = current.x + dir.dx;
+                    let ny = current.y + dir.dy;
+                    
+                    while (nx >= 0 && ny >= 0 && nx <= config.cols + 1 && ny <= config.rows + 1 && !visited[ny][nx]) {
+                        if (nx === x2 && ny === y2) {
+                            return [...current.path, { x: nx, y: ny }];
+                        }
+                        
+                        if (grid[ny][nx] === null) {
+                            visited[ny][nx] = true;
+                            queue.push({ x: nx, y: ny, path: [...current.path, { x: nx, y: ny }] });
+                        } else {
+                            break;
+                        }
+                        
+                        nx += dir.dx;
+                        ny += dir.dy;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        function drawPath(path) {
+            const cellSize = 55;
+            const gap = 5;
+            const halfCell = cellSize / 2;
+            
+            ctx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.moveTo(path[0].x * (cellSize + gap) + halfCell, path[0].y * (cellSize + gap) + halfCell);
+            
+            for (let i = 1; i < path.length; i++) {
+                ctx.lineTo(path[i].x * (cellSize + gap) + halfCell, path[i].y * (cellSize + gap) + halfCell);
+            }
+            
+            ctx.stroke();
+        }
+
+        function clearPath() {
+            ctx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+        }
+
+        function hasValidPairs() {
+            const config = levels[currentLevel];
+            const cells = [];
+            
+            for (let y = 0; y < config.rows + 2; y++) {
+                for (let x = 0; x < config.cols + 2; x++) {
+                    if (grid[y][x]) {
+                        cells.push({ x, y, emoji: grid[y][x] });
+                    }
+                }
+            }
+            
+            for (let i = 0; i < cells.length; i++) {
+                for (let j = i + 1; j < cells.length; j++) {
+                    if (cells[i].emoji === cells[j].emoji) {
+                        if (findPath(cells[i].x, cells[i].y, cells[j].x, cells[j].y)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        function showHint() {
+            if (hintsLeft <= 0) return;
+            
+            const config = levels[currentLevel];
+            const cells = [];
+            
+            for (let y = 0; y < config.rows + 2; y++) {
+                for (let x = 0; x < config.cols + 2; x++) {
+                    if (grid[y][x]) {
+                        cells.push({ x, y, emoji: grid[y][x] });
+                    }
+                }
+            }
+            
+            for (let i = 0; i < cells.length; i++) {
+                for (let j = i + 1; j < cells.length; j++) {
+                    if (cells[i].emoji === cells[j].emoji) {
+                        if (findPath(cells[i].x, cells[i].y, cells[j].x, cells[j].y)) {
+                            const cell1 = getCellElement(cells[i].x, cells[i].y);
+                            const cell2 = getCellElement(cells[j].x, cells[j].y);
+                            
+                            cell1.style.animation = 'pulse 0.5s ease 3';
+                            cell2.style.animation = 'pulse 0.5s ease 3';
+                            
+                            setTimeout(() => {
+                                cell1.style.animation = '';
+                                cell2.style.animation = '';
+                            }, 1500);
+                            
+                            hintsLeft--;
+                            updateStats();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        function shuffleBoard() {
+            const config = levels[currentLevel];
+            const cells = [];
+            
+            for (let y = 0; y < config.rows + 2; y++) {
+                for (let x = 0; x < config.cols + 2; x++) {
+                    if (grid[y][x]) {
+                        cells.push(grid[y][x]);
+                    }
+                }
+            }
+            
+            shuffleArray(cells);
+            
+            let index = 0;
+            for (let y = 0; y < config.rows + 2; y++) {
+                for (let x = 0; x < config.cols + 2; x++) {
+                    if (grid[y][x]) {
+                        grid[y][x] = cells[index++];
+                    }
+                }
+            }
+            
+            score = Math.max(0, score - 20);
+            updateStats();
+            renderGrid();
+        }
+
+        function updateStats() {
+            scoreElement.textContent = score;
+            pairsElement.textContent = pairsLeft;
+            hintsElement.textContent = hintsLeft;
+        }
+
+        function loadHighScore() {
+            const highScore = localStorage.getItem(highScoreKey);
+            highScoreElement.textContent = highScore || '--';
+        }
+
+        function saveHighScore() {
+            const currentHighScore = parseInt(localStorage.getItem(highScoreKey) || '0');
+            if (score > currentHighScore) {
+                localStorage.setItem(highScoreKey, score);
+                highScoreElement.textContent = score;
+            }
+        }
+
+        function winGame() {
+            saveHighScore();
+            
+            winTitle.textContent = '🎉 恭喜通关！';
+            winMessage.innerHTML = `
+                你成功消除了所有配对！<br><br>
+                最终得分: ${score}
+            `;
+            winModal.classList.remove('hidden');
+        }
+
+        function showNoPathModal() {
+            noPathModal.classList.remove('hidden');
+        }
+
+        function closeNoPathModal() {
+            noPathModal.classList.add('hidden');
+        }
+
+        function restartGame() {
+            winModal.classList.add('hidden');
+            initGame();
+        }
+
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLevel = btn.dataset.level;
+                initGame();
+            });
+        });
+
+        restartBtn.addEventListener('click', restartGame);
+        hintBtn.addEventListener('click', showHint);
+        shuffleBtn.addEventListener('click', shuffleBoard);
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+                50% { transform: scale(1.1); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        initGame();
+    </script>
+</body>
+</html>

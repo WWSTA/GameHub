@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋游戏 - GameHub</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .game-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .turn-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .turn-stone {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .turn-stone.black {
+            background: radial-gradient(circle at 30% 30%, #555, #000);
+        }
+
+        .turn-stone.white {
+            background: radial-gradient(circle at 30% 30%, #fff, #ddd);
+            border: 1px solid #ccc;
+        }
+
+        .score-panel {
+            display: flex;
+            gap: 20px;
+        }
+
+        .score-item {
+            text-align: center;
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .score-item.black {
+            border-bottom: 3px solid #000;
+        }
+
+        .score-item.white {
+            border-bottom: 3px solid #999;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .board-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        #board {
+            background: #dcb35c;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message h2 {
+            color: #d63031;
+            margin-bottom: 10px;
+        }
+
+        .message p {
+            color: #2d3436;
+            font-size: 1.1rem;
+        }
+
+        .help-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .help-button:hover {
+            transform: scale(1.1);
+        }
+
+        .help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .help-modal.show {
+            display: flex;
+        }
+
+        .help-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .help-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .help-content h3 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .help-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .help-content ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .help-content li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .close-help {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .close-help:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .game-wrapper {
+                padding: 15px;
+            }
+
+            .game-info {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .score-panel {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .help-button {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chess-board"></i> 五子棋游戏</h1>
+            <p>黑白双方轮流落子，先连成五子者获胜！</p>
+        </div>
+
+        <div class="game-wrapper">
+            <div id="message" class="message">
+                <h2>🎉 游戏结束！</h2>
+                <p id="winnerText"></p>
+            </div>
+
+            <div class="game-info">
+                <div class="turn-indicator">
+                    <span>当前玩家：</span>
+                    <div id="turnStone" class="turn-stone black"></div>
+                    <span id="turnText">黑棋</span>
+                </div>
+                <div class="score-panel">
+                    <div class="score-item black">
+                        <div class="score-label">黑棋胜</div>
+                        <div id="blackScore" class="score-value">0</div>
+                    </div>
+                    <div class="score-item white">
+                        <div class="score-label">白棋胜</div>
+                        <div id="whiteScore" class="score-value">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-container">
+                <canvas id="board" width="570" height="570"></canvas>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="resetGame()">
+                    <i class="fas fa-redo"></i> 重新开始
+                </button>
+                <button id="undoBtn" class="btn btn-secondary" onclick="undoMove()" disabled>
+                    <i class="fas fa-undo"></i> 悔棋
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <button class="help-button" onclick="toggleHelp()">
+        <i class="fas fa-question"></i>
+    </button>
+
+    <div id="helpModal" class="help-modal">
+        <div class="help-content">
+            <h2>🎮 游戏说明</h2>
+            
+            <h3>📋 游戏规则</h3>
+            <ul>
+                <li>五子棋使用 15×15 的棋盘</li>
+                <li>黑棋先行，黑白双方轮流落子</li>
+                <li>将棋子放在棋盘的交叉点上</li>
+                <li>先将五颗棋子连成一线的一方获胜</li>
+                <li>连线可以是横、竖、斜四个方向</li>
+                <li>如果棋盘下满仍无获胜，则为平局</li>
+            </ul>
+
+            <h3>🎯 操作说明</h3>
+            <ul>
+                <li><strong>落子：</strong>点击棋盘上的交叉点放置棋子</li>
+                <li><strong>重新开始：</strong>点击重新开始按钮重置游戏</li>
+                <li><strong>悔棋：</strong>点击悔棋按钮撤回上一步</li>
+            </ul>
+
+            <h3>💡 游戏技巧</h3>
+            <ul>
+                <li>优先占据棋盘中心位置</li>
+                <li>注意防守，防止对手连成五子</li>
+                <li>同时建立多个进攻方向</li>
+                <li>利用活三、冲四等战术获胜</li>
+            </ul>
+
+            <button class="close-help" onclick="toggleHelp()">
+                知道了
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const BOARD_SIZE = 15;
+        window.CELL_SIZE = 38;
+        window.STONE_RADIUS = 16;
+        window.PADDING = 10;
+
+        let board = [];
+        let currentPlayer = 1;
+        let gameOver = false;
+        let moveHistory = [];
+        let scores = { black: 0, white: 0 };
+
+        const canvas = document.getElementById('board');
+        const ctx = canvas.getContext('2d');
+
+        function initBoard() {
+            board = [];
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                board[i] = [];
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    board[i][j] = 0;
+                }
+            }
+            currentPlayer = 1;
+            gameOver = false;
+            moveHistory = [];
+            document.getElementById('message').classList.remove('show');
+            document.getElementById('undoBtn').disabled = true;
+            updateTurnIndicator();
+        }
+
+        function drawBoard() {
+            ctx.fillStyle = '#dcb35c';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#8b7355';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(window.PADDING + i * window.CELL_SIZE, window.PADDING);
+                ctx.lineTo(window.PADDING + i * window.CELL_SIZE, window.PADDING + (BOARD_SIZE - 1) * window.CELL_SIZE);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(window.PADDING, window.PADDING + i * window.CELL_SIZE);
+                ctx.lineTo(window.PADDING + (BOARD_SIZE - 1) * window.CELL_SIZE, window.PADDING + i * window.CELL_SIZE);
+                ctx.stroke();
+            }
+
+            drawStarPoints();
+
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (board[i][j] !== 0) {
+                        drawStone(i, j, board[i][j]);
+                    }
+                }
+            }
+        }
+
+        function drawStarPoints() {
+            ctx.fillStyle = '#8b7355';
+            const points = [
+                [3, 3], [3, 7], [3, 11],
+                [7, 3], [7, 7], [7, 11],
+                [11, 3], [11, 7], [11, 11]
+            ];
+            points.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(window.PADDING + x * window.CELL_SIZE, window.PADDING + y * window.CELL_SIZE, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawStone(row, col, player) {
+            const x = window.PADDING + col * window.CELL_SIZE;
+            const y = window.PADDING + row * window.CELL_SIZE;
+
+            ctx.beginPath();
+            ctx.arc(x, y, window.STONE_RADIUS, 0, Math.PI * 2);
+
+            if (player === 1) {
+                const gradient = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, window.STONE_RADIUS);
+                gradient.addColorStop(0, '#555');
+                gradient.addColorStop(1, '#000');
+                ctx.fillStyle = gradient;
+            } else {
+                const gradient = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, window.STONE_RADIUS);
+                gradient.addColorStop(0, '#fff');
+                gradient.addColorStop(1, '#ddd');
+                ctx.fillStyle = gradient;
+            }
+            ctx.fill();
+
+            if (player === 2) {
+                ctx.strokeStyle = '#ccc';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 5;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.stroke();
+            ctx.shadowColor = 'transparent';
+        }
+
+        function placeStone(row, col) {
+            if (gameOver || board[row][col] !== 0) {
+                return;
+            }
+
+            moveHistory.push({ row, col, player: currentPlayer });
+            board[row][col] = currentPlayer;
+            drawBoard();
+
+            if (checkWin(row, col)) {
+                gameOver = true;
+                if (currentPlayer === 1) {
+                    scores.black++;
+                } else {
+                    scores.white++;
+                }
+                updateScores();
+                showWinner(currentPlayer);
+            } else if (checkDraw()) {
+                gameOver = true;
+                showDraw();
+            } else {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                updateTurnIndicator();
+            }
+
+            document.getElementById('undoBtn').disabled = moveHistory.length === 0;
+        }
+
+        function checkWin(row, col) {
+            const directions = [
+                [[0, 1], [0, -1]],
+                [[1, 0], [-1, 0]],
+                [[1, 1], [-1, -1]],
+                [[1, -1], [-1, 1]]
+            ];
+
+            const player = board[row][col];
+
+            for (const [dir1, dir2] of directions) {
+                let count = 1;
+
+                let r = row + dir1[0];
+                let c = col + dir1[1];
+                while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === player) {
+                    count++;
+                    r += dir1[0];
+                    c += dir1[1];
+                }
+
+                r = row + dir2[0];
+                c = col + dir2[1];
+                while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === player) {
+                    count++;
+                    r += dir2[0];
+                    c += dir2[1];
+                }
+
+                if (count >= 5) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function checkDraw() {
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (board[i][j] === 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function showWinner(player) {
+            const message = document.getElementById('message');
+            const winnerText = document.getElementById('winnerText');
+            winnerText.textContent = player === 1 ? '黑棋获胜！' : '白棋获胜！';
+            message.classList.add('show');
+        }
+
+        function showDraw() {
+            const message = document.getElementById('message');
+            const winnerText = document.getElementById('winnerText');
+            winnerText.textContent = '平局！棋盘已满！';
+            message.classList.add('show');
+        }
+
+        function updateTurnIndicator() {
+            const stone = document.getElementById('turnStone');
+            const text = document.getElementById('turnText');
+            stone.className = 'turn-stone ' + (currentPlayer === 1 ? 'black' : 'white');
+            text.textContent = currentPlayer === 1 ? '黑棋' : '白棋';
+        }
+
+        function updateScores() {
+            document.getElementById('blackScore').textContent = scores.black;
+            document.getElementById('whiteScore').textContent = scores.white;
+        }
+
+        function resetGame() {
+            initBoard();
+            drawBoard();
+        }
+
+        function undoMove() {
+            if (moveHistory.length === 0 || gameOver) {
+                return;
+            }
+
+            const lastMove = moveHistory.pop();
+            board[lastMove.row][lastMove.col] = 0;
+            currentPlayer = lastMove.player;
+            gameOver = false;
+            document.getElementById('message').classList.remove('show');
+            updateTurnIndicator();
+            drawBoard();
+            document.getElementById('undoBtn').disabled = moveHistory.length === 0;
+        }
+
+        function getPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            let x, y;
+
+            if (e.touches) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+            
+            const col = Math.round((x - window.PADDING) / window.CELL_SIZE);
+            const row = Math.round((y - window.PADDING) / window.CELL_SIZE);
+
+            return { row, col };
+        }
+
+        function handleClick(e) {
+            e.preventDefault();
+            const { row, col } = getPosition(e);
+
+            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+                placeStone(row, col);
+            }
+        }
+
+        function toggleHelp() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('show');
+        }
+
+        function loadScores() {
+            const savedScores = localStorage.getItem('gomokuScores');
+            if (savedScores) {
+                scores = JSON.parse(savedScores);
+                updateScores();
+            }
+        }
+
+        function saveScores() {
+            localStorage.setItem('gomokuScores', JSON.stringify(scores));
+        }
+
+        const originalUpdateScores = updateScores;
+        updateScores = function() {
+            originalUpdateScores();
+            saveScores();
+        };
+
+        function resizeBoard() {
+            const containerWidth = canvas.parentElement.clientWidth;
+            const maxBoardSize = Math.min(570, containerWidth - 30);
+            const scale = maxBoardSize / 570;
+            
+            canvas.width = maxBoardSize;
+            canvas.height = maxBoardSize;
+            canvas.style.width = maxBoardSize + 'px';
+            canvas.style.height = maxBoardSize + 'px';
+            
+            window.CELL_SIZE = 38 * scale;
+            window.STONE_RADIUS = 16 * scale;
+            window.PADDING = 10 * scale;
+            
+            drawBoard();
+        }
+
+        canvas.addEventListener('click', handleClick);
+        canvas.addEventListener('touchstart', handleClick, { passive: false });
+
+        document.getElementById('helpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleHelp();
+            }
+        });
+
+        window.addEventListener('resize', resizeBoard);
+        
+        loadScores();
+        initBoard();
+        resizeBoard();
+    </script>
+</body>
+</html>

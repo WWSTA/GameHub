@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - 多款小游戏集合</title>
+    <meta name="description" content="GameHub是一个集合了多款小游戏的现代化网站，旨在为用户提供丰富多样的休闲娱乐体验。">
+    <meta name="keywords" content="游戏,小游戏,休闲游戏,GameHub">
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/script.js" as="script">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1><i class="fas fa-gamepad"></i> GameHub</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="#home" class="active">首页</a>
+                <a href="#games">游戏</a>
+                <a href="#categories">分类</a>
+                <a href="#about">关于</a>
+            </nav>
+            <div class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section id="home" class="hero">
+        <div class="container">
+            <h2>欢迎来到 <span>GameHub</span></h2>
+            <p>探索多款有趣的小游戏，享受休闲时光</p>
+            <a href="#games" class="btn-primary">开始游戏</a>
+        </div>
+    </section>
+
+    <!-- 游戏分类 -->
+    <section id="categories" class="categories">
+        <div class="container">
+            <h2>游戏分类</h2>
+            <div class="category-grid">
+                <div class="category-card">
+                    <i class="fas fa-brain"></i>
+                    <h3>益智游戏</h3>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-running"></i>
+                    <h3>动作游戏</h3>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-chess"></i>
+                    <h3>策略游戏</h3>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <h3>解谜游戏</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 游戏展示 -->
+    <section id="games" class="games">
+        <div class="container">
+            <h2>热门游戏</h2>
+            <div class="game-grid">
+                <!-- 游戏卡片 1 -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <div class="game-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-memory"></i>
+                            <p>新记忆配对</p>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3>新记忆配对游戏</h3>
+                        <p>全新升级！多种难度、主题切换、提示功能</p>
+                        <a href="game.html?game=new-memory-match" class="btn-secondary">开始游戏</a>
+                    </div>
+                </div>
+                
+                <!-- 游戏卡片 2 -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <div class="game-placeholder">
+                            <i class="fas fa-dragon"></i>
+                            <p>新贪吃蛇</p>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3>新贪吃蛇游戏</h3>
+                        <p>全新升级！道具系统、多种食物、最高分记录</p>
+                        <a href="game.html?game=snake-game" class="btn-secondary">开始游戏</a>
+                    </div>
+                </div>
+                
+                <!-- 游戏卡片 3 -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <div class="game-placeholder">
+                            <i class="fas fa-th-large"></i>
+                            <p>新打砖块</p>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3>新打砖块游戏</h3>
+                        <p>全新升级！道具系统、连击机制、多关卡挑战</p>
+                        <a href="game.html?game=breakout-game" class="btn-secondary">开始游戏</a>
+                    </div>
+                </div>
+                
+                <!-- 游戏卡片 4 -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <div class="game-placeholder">
+                            <i class="fas fa-th"></i>
+                            <p>2048数字</p>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3>2048数字游戏</h3>
+                        <p>数字益智游戏，合并方块合成2048</p>
+                        <a href="game.html?game=2048-game" class="btn-secondary">开始游戏</a>
+                    </div>
+                </div>
+                
+                <!-- 游戏卡片 5 -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <div class="game-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-th-large"></i>
+                            <p>俄罗斯方块</p>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3>俄罗斯方块游戏</h3>
+                        <p>经典的俄罗斯方块，控制方块消除得分，挑战你的反应速度</p>
+                        <a href="game.html?game=tetris-game" class="btn-secondary">开始游戏</a>
+                    </div>
+                </div>
+                
+                <!-- 游戏卡片 6 -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <div class="game-placeholder" style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);">
+                            <i class="fas fa-rocket"></i>
+                            <p>太空射击</p>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3>太空射击游戏</h3>
+                        <p>刺激的太空射击游戏，驾驶飞船消灭敌人，挑战最高分！</p>
+                        <a href="game.html?game=space-shooter" class="btn-secondary">开始游戏</a>
+                    </div>
+                </div>
+            </div>
+            <div class="more-games-container" style="text-align: center; margin-top: 40px;">
+                <a href="games.html" class="btn-primary">
+                    <i class="fas fa-th-large"></i> 更多游戏
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于部分 -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2>关于 GameHub</h2>
+            <p>GameHub 是一个集合了多款小游戏的现代化网站，旨在为用户提供丰富多样的休闲娱乐体验。我们致力于打造一个简洁、直观的游戏平台，让用户能够轻松找到并享受自己喜欢的游戏。</p>
+            <p>未来，我们将不断添加新的游戏，丰富游戏种类，为用户带来更多惊喜和乐趣。</p>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3><i class="fas fa-gamepad"></i> GameHub</h3>
+                    <p>多款小游戏集合，享受休闲时光</p>
+                </div>
+                <div class="footer-links">
+                    <h4>快速链接</h4>
+                    <a href="#home">首页</a>
+                    <a href="#games">游戏</a>
+                    <a href="#categories">分类</a>
+                    <a href="#about">关于</a>
+                </div>
+                <div class="footer-social">
+                    <h4>关注我们</h4>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 GameHub. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
